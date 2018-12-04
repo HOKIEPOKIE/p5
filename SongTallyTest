@@ -1,0 +1,36 @@
+package prj5;
+
+import student.TestCase;
+
+/**
+ * Tests SongTally
+ * 
+ * @author Team54
+ * @version 12.3.2018
+ *
+ */
+public class SongTallyTest extends TestCase
+{
+    private SongTally songTally;
+
+    /**
+     * Sets up the tests
+     */
+    public void setUp()
+    {
+        songTally = new SongTally();
+    }
+
+
+    /**
+     * Tests get and set Tallies
+     */
+    public void testSetTallies()
+    {
+        songTally.setTallies("heard", 0, 1);
+        songTally.setTallies("liked", 2, 2);
+        assertEquals(1, songTally.getHeardTally()[0]);
+        assertEquals(2, songTally.getLikedTally()[2]);
+    }
+
+}
