@@ -1,0 +1,868 @@
+package prj5;
+
+import java.awt.Color;
+import java.util.ArrayList;
+import CS2114.Button;
+import CS2114.Shape;
+import CS2114.TextShape;
+import CS2114.Window;
+import CS2114.WindowSide;
+
+/**
+ * This is the class designated for SurveyWindow
+ * 
+ * NOTE: we couldnt get artist on a new line, it was
+ * being stubborn with us. As for the next and prev,
+ * we couldnt find a way to make it works well. Sorry :(
+ * 
+ * @author Alyssa Farrell (alyss17)
+ * @author Kaitlyn B
+ * @author Dillon
+ * @version November 15, 2018
+ */
+public class GUISurveyWindow
+{
+    private Window window;
+    private Button prevButton;
+    private Button artist;
+    private Button song;
+    private Button year;
+    private Button genre;
+    private Button next;
+    private Button hobby;
+    private Button major;
+    private Button state;
+    private Button quitButton;
+    private Shape[] bars;
+    private TextShape legendTitle;
+    private TextShape legend1;
+    private TextShape legend2;
+    private TextShape legend3;
+    private TextShape legend4;
+    private Shape legendBorder;
+    private ArrayList<Song> currentList;
+    private int indexOfLastDisplayed;
+    private TextShape debug;
+    private String legendIndicator;
+    private String displayIndicator;
+
+    private Song[] songArr;
+
+
+    /**
+     * Constructor for the window, sets stuff up
+     */
+    public GUISurveyWindow()
+    {
+        currentList = Reader.sortedList(SongSortingEnum.TITLE);
+        legendIndicator = "hobby";
+        displayIndicator = "name";
+
+        // display the song info
+        indexOfLastDisplayed = 8;
+
+        window = new Window();
+        window.setSize(1200, 500);
+
+        window.addShape(debug);
+        songArr = new Song[9];
+
+        bars = new Shape[9];
+        prevButton = new Button("Prev");
+        prevButton.onClick(this, "clickedPrev");
+        window.addButton(prevButton, WindowSide.NORTH);
+
+        if (indexOfLastDisplayed - 9 <= 0)
+        {
+            prevButton.disable();
+        }
+
+        artist = new Button("Sort by Artist");
+        window.addButton(artist, WindowSide.NORTH);
+        artist.onClick(this, "clickedArtist");
+
+        song = new Button("Sort by Song Title");
+        window.addButton(song, WindowSide.NORTH);
+        song.onClick(this, "clickedSong");
+
+        year = new Button("Sort by Release Year");
+        window.addButton(year, WindowSide.NORTH);
+        year.onClick(this, "clickedYear");
+
+        genre = new Button("Sort by Genre");
+        window.addButton(genre, WindowSide.NORTH);
+        genre.onClick(this, "clickedGenre");
+
+        next = new Button("Next");
+        window.addButton(next, WindowSide.NORTH);
+        next.onClick(this, "clickedNext");
+
+        if (indexOfLastDisplayed + 9 > currentList.size())
+        {
+            next.disable();
+        }
+
+        hobby = new Button("Represent Hobby");
+        window.addButton(hobby, WindowSide.SOUTH);
+        hobby.onClick(this, "clickedHobby");
+
+        major = new Button("Represent Major");
+        window.addButton(major, WindowSide.SOUTH);
+        major.onClick(this, "clickedMajor");
+
+        state = new Button("Represent State");
+        window.addButton(state, WindowSide.SOUTH);
+        state.onClick(this, "clickedState");
+
+        quitButton = new Button("Quit");
+        window.addButton(quitButton, WindowSide.SOUTH);
+        quitButton.onClick(this, "clickedQuit");
+
+        window.setTitle("Song Survey");
+
+        // Sets up legend
+        clickedSong(song);
+
+    }
+
+
+    /**
+     * Sets the values stored in songArr to the corresponding elements in
+     * currentList.
+     */
+    public void setIndex()
+    {
+        for (int i = indexOfLastDisplayed - 8; i <= indexOfLastDisplayed; i++)
+        {
+            songArr[i % 9] = currentList.get(i);
+        }
+    }
+
+
+    /**
+     * Helper method to display the name of the song and the artists.
+     */
+    public void displayName()
+    {
+        int count = 0;
+        while (count < 9 && songArr[count] != null)
+        {
+            Song current = songArr[count];
+            String title = current.getTitle();
+            String art = "By: " + current.getArtist();
+            TextShape artist = new TextShape(0, 0, art);
+            window.addShape(artist);
+            artist.setX(bars[count].getX() - artist.getWidth() / 2);
+            artist.setY(bars[count].getY() - artist.getHeight());
+            artist.setBackgroundColor(Color.WHITE);
+            TextShape name = new TextShape(0, 0, title);
+            window.addShape(name);
+            name.setX(bars[count].getX() - name.getWidth() / 2);
+            name.setY(artist.getY() - name.getHeight());
+            name.setBackgroundColor(Color.WHITE);
+            count++;
+        }
+    }
+
+
+    /**
+     * Helper method to display the year and the title of the song
+     */
+    public void displayYear()
+    {
+        int count = 0;
+        while (count < 9 && songArr[count] != null)
+        {
+            Song current = songArr[count];
+            String title = current.getTitle();
+            String year = "Released: " + current.getYear();
+            TextShape release = new TextShape(0, 0, year);
+            window.addShape(release);
+            release.setX(bars[count].getX() - release.getWidth() / 2);
+            release.setY(bars[count].getY() - release.getHeight());
+            release.setBackgroundColor(Color.WHITE);
+            TextShape name = new TextShape(0, 0, title);
+            window.addShape(name);
+            name.setX(bars[count].getX() - name.getWidth() / 2);
+            name.setY(release.getY() - name.getHeight());
+            name.setBackgroundColor(Color.WHITE);
+            count++;
+        }
+    }
+
+
+    /**
+     * Helper method to display the genre and title of the songs
+     */
+    public void displayGenre()
+    {
+        int count = 0;
+        while (count < 9 && songArr[count] != null)
+        {
+            Song current = songArr[count];
+            String title = current.getTitle();
+            String genre = current.getGenre();
+            TextShape style = new TextShape(0, 0, genre);
+            window.addShape(style);
+            style.setX(bars[count].getX() - style.getWidth() / 2);
+            style.setY(bars[count].getY() - style.getHeight());
+            style.setBackgroundColor(Color.WHITE);
+            TextShape name = new TextShape(0, 0, title);
+            window.addShape(name);
+            name.setX(bars[count].getX() - name.getWidth() / 2);
+            name.setY(style.getY() - name.getHeight());
+            name.setBackgroundColor(Color.WHITE);
+            count++;
+        }
+    }
+
+
+    /**
+     * helper method to keep the display of the corresponding tag types
+     * for instance sorting by the name would keep the title and artist tags .
+     */
+    public void displayTag()
+    {
+        if (displayIndicator.equals("name"))
+        {
+            displayName();
+        }
+        if (displayIndicator.equals("year"))
+        {
+            displayYear();
+        }
+        if (displayIndicator.equals("genre"))
+        {
+            displayGenre();
+        }
+    }
+
+
+    /**
+     * Helper method to re-add the black bars.
+     */
+    public void addBars()
+    {
+        int windowX = window.getWidth() - 120;
+        int windowY = window.getHeight();
+        int count = 0;
+        for (int y = 0; y < 3; y++)
+        {
+            int a = y;
+            int b = (windowY / 4) - 80 + (a * (windowY / 4));
+            for (int x = 0; x < 3; x++)
+            {
+                int c = x;
+                int d = (windowX / 4) - 2 + (c * (windowX / 4));
+
+                Shape barGlyph = new Shape(d, b, 5, 40, Color.BLACK);
+                bars[count] = barGlyph;
+                window.addShape(barGlyph);
+                count++;
+            }
+
+        }
+        switch (legendIndicator)
+        {
+            case "hobby":
+                setHobbyLegend();
+            case "region":
+                setRegionLegend();
+            case "major":
+                setMajorLegend();
+            default:
+                setHobbyLegend();
+        }
+    }
+
+
+    /**
+     * Used whenever the user clicks previous, should
+     * bring you back to the previous page, if it is
+     * available
+     * 
+     * @param button
+     *            the previous button
+     */
+    public void clickedPrev(Button button)
+    {
+        window.removeAllShapes();
+        addBars();
+        indexOfLastDisplayed -= 9;
+        setIndex();
+        displayTag();
+        sort();
+        if (indexOfLastDisplayed - 9 <= 0)
+        {
+            prevButton.disable();
+        }
+        next.enable();
+
+    }
+
+
+    /**
+     * Takes the user to the next page all the way up
+     * until the last page
+     * 
+     * @param button
+     *            the next button
+     */
+    public void clickedNext(Button button)
+    {
+        window.removeAllShapes();
+        addBars();
+        indexOfLastDisplayed = indexOfLastDisplayed + 9;
+        setIndex();
+        displayTag();
+        sort();
+
+        if (indexOfLastDisplayed + 9 >= currentList.size())
+        {
+            next.disable();
+        }
+
+        prevButton.enable();
+        window.repaint();
+    }
+
+
+    /**
+     * Once the index gets to the last page, it
+     * can only go back so the next button would
+     * have to be disabled.
+     */
+    public void resetIndexOfDisplayed()
+    {
+        indexOfLastDisplayed = 8;
+        prevButton.enable();
+        next.enable();
+        if (indexOfLastDisplayed - 9 <= 0)
+        {
+            prevButton.disable();
+        }
+        if (indexOfLastDisplayed + 9 >= currentList.size())
+        {
+            next.disable();
+        }
+        setIndex();
+
+    }
+
+
+    /**
+     * When the user clicks the artist, the
+     * window sorts the names by artist.
+     * 
+     * @param button
+     *            the clicked artist
+     */
+    public void clickedArtist(Button button)
+    {
+        genre.enable();
+        song.enable();
+        year.enable();
+        window.removeAllShapes();
+        currentList = Reader.sortedList(SongSortingEnum.ARTIST);// resorts list
+        resetIndexOfDisplayed(); // resets the songs to be displayed to show
+                                 // first 9
+        setIndex();
+        addBars();// resets the songs to be displayed to show
+        displayIndicator = "name";
+        displayTag();
+        sort();
+        artist.disable();
+        window.repaint();
+
+    }
+
+
+    /**
+     * Window resorts the songs by the song
+     * name
+     * 
+     * @param button
+     *            sort by song name
+     */
+    public void clickedSong(Button button)
+    {
+        genre.enable();
+        artist.enable();
+        year.enable();
+
+        window.removeAllShapes();
+        currentList = Reader.sortedList(SongSortingEnum.TITLE);// resorts list
+        resetIndexOfDisplayed(); // resets the songs to be displayed to show
+        setIndex();
+        addBars();// resets the songs to be displayed to show
+        displayIndicator = "name";
+        displayTag();
+        sort();
+        window.repaint();
+        song.disable();
+    }
+
+
+    /**
+     * When the user clicks sort by year, the
+     * window will be sorted by ascending order of
+     * the year
+     * 
+     * @param button
+     *            the year sort
+     */
+    public void clickedYear(Button button)
+    {
+        genre.enable();
+        song.enable();
+        artist.enable();
+
+        window.removeAllShapes();
+
+        currentList = Reader.sortedList(SongSortingEnum.YEAR);// resorts list
+        resetIndexOfDisplayed();
+        setIndex();
+        addBars();// resets the songs to be displayed to show
+        displayIndicator = "year";
+        displayTag();
+        sort();
+        // displays songs
+        window.repaint();
+        year.disable();
+    }
+
+
+    /**
+     * The window will need to be sorted by genre
+     * of the song
+     * 
+     * @param button
+     *            genre
+     */
+    public void clickedGenre(Button button)
+    {
+        artist.enable();
+        song.enable();
+        year.enable();
+
+        window.removeAllShapes();
+        currentList = Reader.sortedList(SongSortingEnum.GENRE);// resorts list
+        resetIndexOfDisplayed(); // resets the songs to be displayed to show
+        setIndex();
+        addBars();
+        displayIndicator = "genre";
+        displayTag();
+        sort();
+        // displays songs
+        window.repaint();
+        genre.disable();
+    }
+
+
+    /**
+     * Helper method to keep the tally bars made when sorting by
+     * participant data.
+     */
+    public void sort()
+    {
+        if (legendIndicator.equals("hobby"))
+        {
+            setHobbyLegend();
+            clickedHobby(hobby);
+        }
+        if (legendIndicator.equals("region"))
+        {
+            setRegionLegend();
+            clickedState(state);
+        }
+        if (legendIndicator.equals("major"))
+        {
+            setMajorLegend();
+            clickedMajor(major);
+        }
+    }
+
+
+    /**
+     * The bars and legend change to be all
+     * about the hobby data
+     * 
+     * @param button
+     *            hobby sort
+     */
+    public void clickedHobby(Button button)
+    {
+        major.enable();
+        state.enable();
+        legendIndicator = "hobby";
+        window.removeAllShapes();
+        displayTag();
+
+        addBars();
+
+        SongTally[] tallies = Reader.hobbyTallies(currentList);
+        for (int i = indexOfLastDisplayed - 8; i <= indexOfLastDisplayed; i++)
+        {
+            int[] heard = tallies[i].getHeardTally();
+            int[] liked = tallies[i].getLikedTally();
+            int heardReading = heard[0]; // index of 0 is reading
+            int heardArt = heard[1]; // index of 1 is art
+            int heardSports = heard[2]; // index of 2 is sports
+            int heardMusic = heard[3]; // index of 3 is music
+            // Indices can be found on tallier
+            int likedReading = liked[0];
+            int likedArt = liked[1];
+            int likedSports = liked[2];
+            int likedMusic = liked[3];
+
+
+            Shape pinkBarLikes = new Shape(bars[i % 9].getX(), bars[i % 9]
+                .getY(), likedReading, 10, Color.MAGENTA);
+            window.addShape(pinkBarLikes);
+            Shape blueBarLikes = new Shape(bars[i % 9].getX(), bars[i % 9]
+                .getY() + 10, likedArt, 10, Color.BLUE);
+            window.addShape(blueBarLikes);
+            Shape yellowBarLikes = new Shape(bars[i % 9].getX(), bars[i % 9]
+                .getY() + 20, likedSports, 10, Color.YELLOW);
+            window.addShape(yellowBarLikes);
+            Shape greenBarLikes = new Shape(bars[i % 9].getX(), bars[i % 9]
+                .getY() + 30, likedMusic, 10, Color.GREEN);
+            window.addShape(greenBarLikes);
+
+            int indexer = i % songArr.length;
+
+            Shape pinkBarHeard = new Shape(bars[indexer].getX() - heardReading,
+                bars[indexer].getY(), heardReading, 10, Color.MAGENTA);
+            window.addShape(pinkBarHeard);
+            Shape blueBarHeard = new Shape(bars[indexer].getX() - heardArt,
+                bars[indexer].getY() + 10, heardArt, 10, Color.BLUE);
+            window.addShape(blueBarHeard);
+            Shape yellowBarHeard = new Shape(bars[indexer].getX() - heardSports,
+                bars[indexer].getY() + 20, heardSports, 10, Color.YELLOW);
+            window.addShape(yellowBarHeard);
+            Shape greenBarHeard = new Shape(bars[indexer].getX() - heardMusic,
+                bars[indexer].getY() + 30, heardMusic, 10, Color.GREEN);
+            window.addShape(greenBarHeard);
+
+        }
+        hobby.disable();
+
+    }
+
+
+    /**
+     * The bars and legend change to be all
+     * about the major data
+     * 
+     * @param button
+     *            sorts by major
+     */
+    public void clickedMajor(Button button)
+    {
+        hobby.enable();
+        state.enable();
+
+        legendIndicator = "major";
+        window.removeAllShapes();
+        // setMajorLegend();
+        // add names
+
+        addBars();
+        displayTag();
+        SongTally[] tallies = Reader.majorTallies(currentList);
+        for (int i = indexOfLastDisplayed - 8; i <= indexOfLastDisplayed; i++)
+        {
+            int[] heard = tallies[i].getHeardTally();
+            int[] liked = tallies[i].getLikedTally();
+            int heardReading = heard[0]; // index of 0 is reading
+            int heardArt = heard[1]; // index of 1 is art
+            int heardSports = heard[2]; // index of 2 is sports
+            int heardMusic = heard[3]; // index of 3 is music
+            // Indices can be found on tallier
+            int likedReading = liked[0];
+            int likedArt = liked[1];
+            int likedSports = liked[2];
+            int likedMusic = liked[3];
+
+
+            Shape pinkBarLikes = new Shape(bars[i % 9].getX(), bars[i % 9]
+                .getY(), likedReading, 10, Color.MAGENTA);
+            window.addShape(pinkBarLikes);
+            Shape blueBarLikes = new Shape(bars[i % 9].getX(), bars[i % 9]
+                .getY() + 10, likedArt, 10, Color.BLUE);
+            window.addShape(blueBarLikes);
+            Shape yellowBarLikes = new Shape(bars[i % 9].getX(), bars[i % 9]
+                .getY() + 20, likedSports, 10, Color.YELLOW);
+            window.addShape(yellowBarLikes);
+            Shape greenBarLikes = new Shape(bars[i % 9].getX(), bars[i % 9]
+                .getY() + 30, likedMusic, 10, Color.GREEN);
+            window.addShape(greenBarLikes);
+
+            Shape pinkBarHeard = new Shape(bars[i % 9].getX() - heardReading,
+                bars[i % 9].getY(), heardReading, 10, Color.MAGENTA);
+            window.addShape(pinkBarHeard);
+            Shape blueBarHeard = new Shape(bars[i % 9].getX() - heardArt, bars[i
+                % 9].getY() + 10, heardArt, 10, Color.BLUE);
+            window.addShape(blueBarHeard);
+            Shape yellowBarHeard = new Shape(bars[i % 9].getX() - heardSports,
+                bars[i % 9].getY() + 20, heardSports, 10, Color.YELLOW);
+            window.addShape(yellowBarHeard);
+            Shape greenBarHeard = new Shape(bars[i % 9].getX() - heardMusic,
+                bars[i % 9].getY() + 30, heardMusic, 10, Color.GREEN);
+            window.addShape(greenBarHeard);
+
+        }
+        major.disable();
+    }
+
+
+    /**
+     * The bars and legend change to be all
+     * about the state/region data
+     * 
+     * @param button
+     *            sorts the data by region
+     */
+    public void clickedState(Button button)
+    {
+        major.enable();
+        hobby.enable();
+
+        legendIndicator = "region";
+        window.removeAllShapes();
+        // add names
+        addBars();
+        displayTag();
+        SongTally[] tallies = Reader.stateTallies(currentList);
+        for (int i = indexOfLastDisplayed - 8; i <= indexOfLastDisplayed; i++)
+        {
+            int[] heard = tallies[i].getHeardTally();
+            int[] liked = tallies[i].getLikedTally();
+            int heardReading = heard[0]; // index of 0 is reading
+            int heardArt = heard[1]; // index of 1 is art
+            int heardSports = heard[2]; // index of 2 is sports
+            int heardMusic = heard[3]; // index of 3 is music
+            // Indices can be found on tallier
+            int likedReading = liked[0];
+            int likedArt = liked[1];
+            int likedSports = liked[2];
+            int likedMusic = liked[3];
+
+
+            Shape pinkBarLikes = new Shape(bars[i % 9].getX(), bars[i % 9]
+                .getY(), likedReading, 10, Color.MAGENTA);
+            window.addShape(pinkBarLikes);
+            Shape blueBarLikes = new Shape(bars[i % 9].getX(), bars[i % 9]
+                .getY() + 10, likedArt, 10, Color.BLUE);
+            window.addShape(blueBarLikes);
+            Shape yellowBarLikes = new Shape(bars[i % 9].getX(), bars[i % 9]
+                .getY() + 20, likedSports, 10, Color.YELLOW);
+            window.addShape(yellowBarLikes);
+            Shape greenBarLikes = new Shape(bars[i % 9].getX(), bars[i % 9]
+                .getY() + 30, likedMusic, 10, Color.GREEN);
+            window.addShape(greenBarLikes);
+
+            Shape pinkBarHeard = new Shape(bars[i % 9].getX() - heardReading,
+                bars[i % 9].getY(), heardReading, 10, Color.MAGENTA);
+            window.addShape(pinkBarHeard);
+            Shape blueBarHeard = new Shape(bars[i % 9].getX() - heardArt, bars[i
+                % 9].getY() + 10, heardArt, 10, Color.BLUE);
+            window.addShape(blueBarHeard);
+            Shape yellowBarHeard = new Shape(bars[i % 9].getX() - heardSports,
+                bars[i % 9].getY() + 20, heardSports, 10, Color.YELLOW);
+            window.addShape(yellowBarHeard);
+            Shape greenBarHeard = new Shape(bars[i % 9].getX() - heardMusic,
+                bars[i % 9].getY() + 30, heardMusic, 10, Color.GREEN);
+            window.addShape(greenBarHeard);
+
+        }
+        state.disable();
+    }
+
+
+    /**
+     * Exits out of the window since the user
+     * is done looking at the data
+     * 
+     * @param button
+     *            quit
+     */
+    public void clickedQuit(Button button)
+    {
+        System.exit(0);
+    }
+
+
+    /**
+     * The legend updated to match everything that
+     * is included within hobby
+     */
+    public void setHobbyLegend()
+    {
+        legendTitle = new TextShape(window.getWidth() - (675 - 555), window
+            .getHeight() - (400 - 135), "Hobby Legend");
+        legendTitle.setBackgroundColor(Color.WHITE);
+        window.addShape(legendTitle);
+
+        legend1 = new TextShape(window.getWidth() - (675 - 555), window
+            .getHeight() - (400 - 155), "Read", Color.MAGENTA);
+        legend1.setBackgroundColor(Color.WHITE);
+        window.addShape(legend1);
+
+        legend2 = new TextShape(window.getWidth() - (675 - 555), window
+            .getHeight() - (400 - 175), "Art", Color.BLUE);
+        legend2.setBackgroundColor(Color.WHITE);
+        window.addShape(legend2);
+
+        legend3 = new TextShape(window.getWidth() - (675 - 555), window
+            .getHeight() - (400 - 195), "Sports", Color.YELLOW);
+        legend3.setBackgroundColor(Color.WHITE);
+        window.addShape(legend3);
+
+        legend4 = new TextShape(window.getWidth() - (675 - 555), window
+            .getHeight() - (400 - 215), "Music", Color.GREEN);
+        legend4.setBackgroundColor(Color.WHITE);
+        window.addShape(legend4);
+
+        TextShape songTitle = new TextShape(window.getWidth() - (675 - 570),
+            window.getHeight() - (400 - 235), "Song Title");
+        songTitle.setBackgroundColor(Color.WHITE);
+        window.addShape(songTitle);
+
+        TextShape heard = new TextShape(window.getWidth() - (675 - 555), window
+            .getHeight() - (400 - 265), "Heard");
+        heard.setBackgroundColor(Color.WHITE);
+        window.addShape(heard);
+
+        Shape legendBar = new Shape(window.getWidth() - (675 - 605), window
+            .getHeight() - (400 - 258), 5, 30, Color.BLACK);
+        window.addShape(legendBar);
+
+        TextShape likes = new TextShape(window.getWidth() - (675 - 615), window
+            .getHeight() - (400 - 265), "Likes");
+        likes.setBackgroundColor(Color.WHITE);
+        window.addShape(likes);
+
+        legendBorder = new Shape(window.getWidth() - (675 - 550), window
+            .getHeight() - (400 - 130), 110, 160, Color.WHITE);
+        legendBorder.setForegroundColor(Color.BLACK);
+        window.addShape(legendBorder);
+    }
+
+
+    /**
+     * The legend updated to match everything
+     * that goes along with major data
+     */
+    public void setMajorLegend()
+    {
+        legendTitle = new TextShape(window.getWidth() - (675 - 555), window
+            .getHeight() - (400 - 135), "Major Legend");
+        legendTitle.setBackgroundColor(Color.WHITE);
+        window.addShape(legendTitle);
+
+        legend1 = new TextShape(window.getWidth() - (675 - 555), window
+            .getHeight() - (400 - 155), "Computer Sci", Color.MAGENTA);
+        legend1.setBackgroundColor(Color.WHITE);
+        window.addShape(legend1);
+
+        legend2 = new TextShape(window.getWidth() - (675 - 555), window
+            .getHeight() - (400 - 175), "Other Eng", Color.BLUE);
+        legend2.setBackgroundColor(Color.WHITE);
+        window.addShape(legend2);
+
+        legend3 = new TextShape(window.getWidth() - (675 - 555), window
+            .getHeight() - (400 - 195), "Math/CMDA", Color.YELLOW);
+        legend3.setBackgroundColor(Color.WHITE);
+        window.addShape(legend3);
+
+        legend4 = new TextShape(window.getWidth() - (675 - 555), window
+            .getHeight() - (400 - 215), "Other", Color.GREEN);
+        legend4.setBackgroundColor(Color.WHITE);
+        window.addShape(legend4);
+
+        TextShape songTitle = new TextShape(window.getWidth() - (675 - 570),
+            window.getHeight() - (400 - 235), "Song Title");
+        songTitle.setBackgroundColor(Color.WHITE);
+        window.addShape(songTitle);
+
+        TextShape heard = new TextShape(window.getWidth() - (675 - 555), window
+            .getHeight() - (400 - 265), "Heard");
+        heard.setBackgroundColor(Color.WHITE);
+        window.addShape(heard);
+
+        Shape legendBar = new Shape(window.getWidth() - (675 - 605), window
+            .getHeight() - (400 - 258), 5, 30, Color.BLACK);
+        window.addShape(legendBar);
+
+        TextShape likes = new TextShape(window.getWidth() - (675 - 615), window
+            .getHeight() - (400 - 265), "Likes");
+        likes.setBackgroundColor(Color.WHITE);
+        window.addShape(likes);
+
+        legendBorder = new Shape(window.getWidth() - (675 - 550), window
+            .getHeight() - (400 - 130), 110, 160, Color.WHITE);
+        legendBorder.setForegroundColor(Color.BLACK);
+        window.addShape(legendBorder);
+    }
+
+
+    /**
+     * An updated region legend that appears when
+     * the user wants to see data that is
+     * sorted by region
+     */
+    public void setRegionLegend()
+    {
+        legendTitle = new TextShape(window.getWidth() - (675 - 555), window
+            .getHeight() - (400 - 135), "Region Legend");
+        // legendTitle = new TextShape(555, 135, "Region Legend");
+        legendTitle.setBackgroundColor(Color.WHITE);
+        window.addShape(legendTitle);
+
+        legend1 = new TextShape(window.getWidth() - (675 - 555), window
+            .getHeight() - (400 - 155), "Northeast US", Color.MAGENTA);
+        legend1.setBackgroundColor(Color.WHITE);
+        window.addShape(legend1);
+
+        legend2 = new TextShape(window.getWidth() - (675 - 555), window
+            .getHeight() - (400 - 175), "Southeast US", Color.BLUE);
+        legend2.setBackgroundColor(Color.WHITE);
+        window.addShape(legend2);
+
+        legend3 = new TextShape(window.getWidth() - (675 - 555), window
+            .getHeight() - (400 - 195), "the rest of US", Color.YELLOW);
+        legend3.setBackgroundColor(Color.WHITE);
+        window.addShape(legend3);
+
+        legend4 = new TextShape(window.getWidth() - (675 - 555), window
+            .getHeight() - (400 - 215), "outside of US", Color.GREEN);
+        legend4.setBackgroundColor(Color.WHITE);
+        window.addShape(legend4);
+
+        TextShape songTitle = new TextShape(window.getWidth() - (675 - 570),
+            window.getHeight() - (400 - 235), "Song Title");
+        songTitle.setBackgroundColor(Color.WHITE);
+        window.addShape(songTitle);
+
+        TextShape heard = new TextShape(window.getWidth() - (675 - 555), window
+            .getHeight() - (400 - 265), "Heard");
+        heard.setBackgroundColor(Color.WHITE);
+        window.addShape(heard);
+
+        Shape legendBar = new Shape(window.getWidth() - (675 - 605), window
+            .getHeight() - (400 - 258), 5, 30, Color.BLACK);
+        window.addShape(legendBar);
+
+        TextShape likes = new TextShape(window.getWidth() - (675 - 615), window
+            .getHeight() - (400 - 265), "Likes");
+        likes.setBackgroundColor(Color.WHITE);
+        window.addShape(likes);
+
+        legendBorder = new Shape(window.getWidth() - (675 - 550), window
+            .getHeight() - (400 - 130), 110, 160, Color.WHITE);
+        // legendBorder = new Shape(550, 130, 110, 160, Color.WHITE);
+        legendBorder.setForegroundColor(Color.BLACK);
+        window.addShape(legendBorder);
+    }
+}
