@@ -1,0 +1,59 @@
+package prj5;
+
+/**
+ * Tallies who heard and liked the songs
+ * 
+ * @author Dillon J
+ * @version Dec 2, 2018
+ */
+public class SongTally {
+    private int[] heard;
+    private int[] liked;
+
+
+    /**
+     * Construct that takes the song in as a
+     * param
+     * 
+     */
+    public SongTally() {
+        
+        heard = new int[4];
+        liked = new int[4];
+    }
+
+
+    /**
+     * Sets the tallies for the person if they
+     * heard the song or not
+     * 
+     * @param name  the song
+     * @param index what value in the array
+     * @param value how many people liked/heard
+     */
+    public void setTallies(String name, int index, int value) {
+        if (name.equals("heard")) {
+            heard[index] = value;
+        }
+        if (name.equals("liked")) {
+            liked[index] = value;
+        }
+    }
+
+    /**
+     * Returns an array of how many have 
+     * heard
+     * @return heard    
+     */
+    public int[] getHeardTally() {
+        return heard;
+    }
+
+    /**
+     * Returns an array of how many have liked
+     * @return liked
+     */
+    public int[] getLikedTally() {
+        return liked;
+    }
+}
